@@ -1,0 +1,30 @@
+{ 
+    "mysql": {
+        "mysql_path" : "C:/Program Files/MySQL/MySQL Server/bin/mysql.exe",
+        "mysqldump_path" : "C:/Program Files/MySQL/MySQL Server/bin/mysqldump.exe",
+        "output_path" : "./output",
+        "queries_path" : "./queries",
+        "merge_subdir" : "merge",
+        "dump_subdir" : "dump",
+        "results_subdir" : "results",
+        "result_extension" : "tsv",
+        "merge_db_connection" : {
+            "host" : "localhost",
+            "port" : "3366",
+            "template_db": "db_name",
+            "database" : "merged_db_name",
+            "username" : "anotheruser",
+            "password" : "anotherpass"
+        },
+        "connections" : [
+            {
+                "host" : "EXAMPLEHOST",
+                "port" : "3366",
+                "database" : "db_name",
+                "username" : "testuser",
+                "password" : "mypassword",
+                "sql" : ["sqlfile1", "sqlfile2"]
+            }
+        ]
+    }
+}

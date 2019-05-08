@@ -11,19 +11,29 @@
         "merge_db_connection" : {
             "host" : "localhost",
             "port" : "3366",
-            "template_db": "db_name",
+            "template_db": "connection1",
             "database" : "merged_db_name",
             "username" : "anotheruser",
             "password" : "anotherpass"
         },
         "connections" : [
             {
+                "name" : "connection1",
                 "host" : "EXAMPLEHOST",
                 "port" : "3366",
                 "database" : "db_name",
                 "username" : "testuser",
                 "password" : "mypassword",
                 "sql" : ["sqlfile1", "sqlfile2"]
+            },
+            {
+                "name" : "connection2",
+                "host" : "EXAMPLEHOST2",
+                "port" : "3366",
+                "database" : "db_name",
+                "username" : "testuser",
+                "password" : "mypassword",
+                "sql" : ["sqlfile1"]
             }
         ]
     }

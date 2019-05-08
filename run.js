@@ -35,6 +35,11 @@ const argv = require('yargs')
     type: 'boolean',
     default: false
   })
+  .option('connections', {
+    alias: 'c',
+    describe: 'connection(s) to export',
+    type: 'array'
+  })
   .usage('Usage: $0 <cmd> [options]')
   .example('node run.js --full-dump --run-queries --merge', 'backup all databases, run all queries and merge all databases')
   .argv ;
@@ -44,6 +49,8 @@ if (!fs.existsSync(mysqlConfig.output_path)) {
 }
 const preview = argv['preview'];
 const ignore = argv['ignore'];
+let connections = (argv['connection'] || []).map(c => mysqlConfig.connections.filter(f => f.name === c).pop());
+connections = connections.length !== 0 ? connections : mysqlConfig.connections;
 
 const dump = (opts) => {
   const { mysqldump_path, host, port, database, username, password, output, input, noCreateInfo, noData, noTriggers, noRoutines, noCreateDb } = opts;  
@@ -58,7 +65,7 @@ const dump = (opts) => {
 
 const execSql = (opts) => {
   const { host, port, database, username, password, input, output, force, mysql_path, ignoreForeignKeyChecks } = opts;
-  const cmd = `"${mysql_path ? mysql_path : mysqlConfig.mysql_path}" ${force ? '--force' : ''} ${ignoreForeignKeyChecks ? '--init-command="SET SESSION FOREIGN_KEY_CHECKS=0;"' : ''} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--database ' + database : ''} ${input ? '< ' + input : ''} ${output ? '> ' + output : ''}`;
+  const cmd = `"${mysql_path ? mysql_path : mysqlConfig.mysql_path}" ${force ? '--force' : ''} ${ignoreForeignKeyChecks ? '--init-command="SET SESSION FOREIGN_KEY_CHECKS=0;"' : ''} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--database ' + database : ''} ${output ? '--batch --raw' : ''} ${input ? '< ' + input : ''} ${output ? '> ' + output : ''}`;
   
   if (preview)
     console.log(cmd);
@@ -70,7 +77,7 @@ const dumpAll = () => {
   if (!fs.existsSync(`${mysqlConfig.output_path}/${mysqlConfig.dump_subdir}`)) {
     fs.mkdirSync(`${mysqlConfig.output_path}/${mysqlConfig.dump_subdir}`);
   }
-  mysqlConfig.connections.forEach(c => {
+  connections.forEach(c => {
     const { host, port, database, username, password } = c;
     try {
       const output = `${mysqlConfig.output_path}/${mysqlConfig.dump_subdir}/${database}.sql`;
@@ -86,7 +93,7 @@ const runQueries = () => {
   if (!fs.existsSync(`${mysqlConfig.output_path}/${mysqlConfig.results_subdir}`)) {
     fs.mkdirSync(`${mysqlConfig.output_path}/${mysqlConfig.results_subdir}`);
   }
-  mysqlConfig.connections.forEach(c => {
+  connections.forEach(c => {
     const { host, port, database, username, password, mysql_path, mysqldump_path } = c;
     
     if (!fs.existsSync(`${mysqlConfig.output_path}/${mysqlConfig.results_subdir}/${database}`)) {
@@ -113,10 +120,9 @@ const merge = () => {
   }
   const { merge_db_connection } = mysqlConfig;
 
-  const template = mysqlConfig.connections.filter(c => c.database === merge_db_connection.template_db).pop();
+  const template = mysqlConfig.connections.filter(c => c.name === merge_db_connection.template_db).pop();
   console.log(`Merging databases | template: ${template.database} | target:${merge_db_connection.template_db}`);
   try {
-
     const { host, port, database, username, password, mysql_path, mysqldump_path } = template;
     // Generate the schema SQL
     const sql = `${mysqlConfig.output_path}/${mysqlConfig.merge_subdir}/schema.sql`;
@@ -133,7 +139,6 @@ const merge = () => {
       mysql_path,
       mysqldump_path
     });
-    
     replace.sync({ files: sql, from: new RegExp(template.database, "g"), to: merge_db_connection.database });
 
     // Run the schema SQL 
@@ -144,12 +149,11 @@ const merge = () => {
       password: merge_db_connection.password,
       input: sql
     });
-
   } catch (err) {
     console.log(err);
   }
   
-  mysqlConfig.connections.forEach(c => {
+  connections.forEach(c => {
     const { host, port, database, username, password, mysqldump_path } = c;
     try {
       const sql = `${mysqlConfig.output_path}/${mysqlConfig.merge_subdir}/${database}.sql`;
@@ -170,7 +174,6 @@ const merge = () => {
         noCreateDb: true,
         noCreateInfo: true
       });
-      
       replace.sync({ files: sql, from: /USE/g, to: '-- USE' });
 
       // Read input file into target schema
@@ -181,7 +184,7 @@ const merge = () => {
         username: merge_db_connection.username,
         password: merge_db_connection.password,
         input: sql,
-        force: false,
+        force: true,
         ignoreForeignKeyChecks: true
       });
     } catch (err) {

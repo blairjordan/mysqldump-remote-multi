@@ -1,4 +1,4 @@
-# mysql-remote-multi 🐬
+# mysql-remote-multi
 
 This tool can be used to quickly retrieve dumps of MySQL databases remotely.
 

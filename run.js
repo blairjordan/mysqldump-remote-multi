@@ -35,14 +35,14 @@ const argv = require('yargs')
     type: 'boolean',
     default: false
   })
-  .option('connections', {
+  .option('connection', {
     alias: 'c',
     describe: 'connection(s) to export',
     type: 'array'
   })
   .usage('Usage: $0 <cmd> [options]')
   .example('node run.js --full-dump --run-queries --merge', 'backup all databases, run all queries and merge all databases')
-  .argv ;
+  .argv;
 
 if (!fs.existsSync(mysqlConfig.output_path)) {
   fs.mkdirSync(mysqlConfig.output_path);
@@ -120,8 +120,8 @@ const merge = () => {
   }
   const { merge_db_connection } = mysqlConfig;
 
+  console.log(`Merging databases | db name: ${merge_db_connection.database} | template: ${merge_db_connection.template_db}`);
   const template = mysqlConfig.connections.filter(c => c.name === merge_db_connection.template_db).pop();
-  console.log(`Merging databases | template: ${template.database} | target:${merge_db_connection.template_db}`);
   try {
     const { host, port, database, username, password, mysql_path, mysqldump_path } = template;
     // Generate the schema SQL

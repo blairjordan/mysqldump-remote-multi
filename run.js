@@ -56,7 +56,7 @@ connections = connections.length !== 0 ? connections : mysqlConfig.connections;
 const dump = (opts) => {
   const { mysqldump_path, host, port, database, username, password, output, input, noCreateInfo, noData, noTriggers, noRoutines, noCreateDb } = opts;  
   const ignoreTables = (ignore && ignore.length > 0) ? ignore.map(i => `--ignore-table=${database}.${i}`).join(" ") : "";
-  const cmd = `"${mysqldump_path ? mysqldump_path : mysqlConfig.mysqldump_path}" ${ignoreTables} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--databases ' + database : '--all-databases'} ${noTriggers ? '--skip-triggers' : ''} ${noRoutines ? '--skip-routines' : ''} ${noCreateInfo ? '--no-create-info' : ''} ${noData ? '--no-data' : ''} ${noCreateDb ? '--no-create-db' : ''} ${output ? '> ' + output : ''}  ${input ? '< ' + input : ''} --insert-ignore`;
+  const cmd = `"${mysqldump_path ? mysqldump_path : mysqlConfig.mysqldump_path}" ${ignoreTables} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--databases ' + database : '--all-databases'} ${noTriggers ? '--skip-triggers' : ''} ${noRoutines ? '--skip-routines' : ''} ${noCreateInfo ? '--no-create-info' : ''} ${noData ? '--no-data' : ''} ${noCreateDb ? '--no-create-db' : ''} ${output ? '> "' + output : '"'}  ${input ? '< ' + input : ''} --insert-ignore`;
   
   if (preview)
     console.log(cmd);
@@ -66,7 +66,7 @@ const dump = (opts) => {
 
 const execSql = (opts) => {
   const { host, port, database, username, password, input, output, force, quick, mysql_path, ignoreForeignKeyChecks } = opts;
-  const cmd = `"${mysql_path ? mysql_path : mysqlConfig.mysql_path}" ${force ? '--force' : ''} ${quick ? '--quick' : ''} ${ignoreForeignKeyChecks ? '--init-command="SET SESSION FOREIGN_KEY_CHECKS=0;"' : ''} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--database ' + database : ''} ${output ? '--batch --raw' : ''} ${input ? '< ' + input : ''} ${output ? '> ' + output : ''}`;
+  const cmd = `"${mysql_path ? mysql_path : mysqlConfig.mysql_path}" ${force ? '--force' : ''} ${quick ? '--quick' : ''} ${ignoreForeignKeyChecks ? '--init-command="SET SESSION FOREIGN_KEY_CHECKS=0;"' : ''} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--database ' + database : ''} ${output ? '--batch --raw' : ''} ${input ? '< ' + input : ''} ${output ? '> "' + output : '"'}`;
   
   if (preview)
     console.log(cmd);

@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 const exec = require("child_process").execSync;
-const mysqlConfig = require("./config.json").mysql;
+//const mysqlConfig = require("./config.json").mysql;
+const mysqlConfig = require("./configMergedLocal.json").mysql;
 const replace = require('replace-in-file');
 const argv = require('yargs')
   .version('1.0')
@@ -64,8 +65,8 @@ const dump = (opts) => {
 };
 
 const execSql = (opts) => {
-  const { host, port, database, username, password, input, output, force, mysql_path, ignoreForeignKeyChecks } = opts;
-  const cmd = `"${mysql_path ? mysql_path : mysqlConfig.mysql_path}" ${force ? '--force' : ''} ${ignoreForeignKeyChecks ? '--init-command="SET SESSION FOREIGN_KEY_CHECKS=0;"' : ''} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--database ' + database : ''} ${output ? '--batch --raw' : ''} ${input ? '< ' + input : ''} ${output ? '> ' + output : ''}`;
+  const { host, port, database, username, password, input, output, force, quick, mysql_path, ignoreForeignKeyChecks } = opts;
+  const cmd = `"${mysql_path ? mysql_path : mysqlConfig.mysql_path}" ${force ? '--force' : ''} ${quick ? '--quick' : ''} ${ignoreForeignKeyChecks ? '--init-command="SET SESSION FOREIGN_KEY_CHECKS=0;"' : ''} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--database ' + database : ''} ${output ? '--batch --raw' : ''} ${input ? '< ' + input : ''} ${output ? '> ' + output : ''}`;
   
   if (preview)
     console.log(cmd);
@@ -106,7 +107,7 @@ const runQueries = () => {
         const sqlName = path.basename(input, path.extname(input));
         const output = `${mysqlConfig.output_path}/${mysqlConfig.results_subdir}/${database}/${sqlName}.${mysqlConfig.result_extension}`;
         console.log(output);
-        execSql({ host, port, database, username, password, input, output, mysql_path, mysqldump_path });
+        execSql({ host, port, database, username, password, input, output, mysql_path, mysqldump_path, quick: true });
       } catch (err) {
         console.log(err);
       }

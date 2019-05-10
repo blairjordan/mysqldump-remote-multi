@@ -1,8 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const exec = require("child_process").execSync;
-//const mysqlConfig = require("./config.json").mysql;
-const mysqlConfig = require("./configMergedLocal.json").mysql;
+const mysqlConfig = require("./config.json").mysql;
 const replace = require('replace-in-file');
 const argv = require('yargs')
   .version('1.0')
@@ -65,7 +64,9 @@ const dump = (opts) => {
 };
 
 const execSql = (opts) => {
-  const { host, port, database, username, password, input, output, force, quick, mysql_path, ignoreForeignKeyChecks } = opts;
+  const { host, port, database, username, password, input, output, force, 
+         
+         , mysql_path, ignoreForeignKeyChecks } = opts;
   const cmd = `"${mysql_path ? mysql_path : mysqlConfig.mysql_path}" ${force ? '--force' : ''} ${quick ? '--quick' : ''} ${ignoreForeignKeyChecks ? '--init-command="SET SESSION FOREIGN_KEY_CHECKS=0;"' : ''} --host=${host} --port=${port} --user=${username} --password=${password} ${database ? '--database ' + database : ''} ${output ? '--batch --raw' : ''} ${input ? '< ' + input : ''} ${output ? '> "' + output : '"'}`;
   
   if (preview)
